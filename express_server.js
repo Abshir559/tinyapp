@@ -1,4 +1,7 @@
-const getUserByEmail = require('./helper.js');
+const {generateRandomString,
+  getUserByEmail,
+  urlsForUser,
+  getUserById,createUser} = require('./helper.js');
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -164,7 +167,7 @@ app.post('/login', (req, res) => {
       res.status(403).send('Wrong Information!! Try again <a href="/login">login</a>')
     }
   } else {
-    res.status(403).send('Register <a href="/register">register</a> here!!')
+    res.redirect('/register');
   }
     console.log('user', user);
 })
@@ -189,43 +192,7 @@ app.post('/register', (req, res) => {
 })
 // HELPER FUNCTIONS
 
-const urlsForUser = function(userID) {
-  let usersObject = {};
-  for (const shortURL in urlDatabase) {
-    if(urlDatabase[shortURL].userID === userID) {
-      usersObject[shortURL] = urlDatabase[shortURL]
-    }
-  }
-  return usersObject;
-}
 
-const getUserById = function(userDB, userID) {
-  if (userDB[userID]) {
-    return userDB[userID]
-  } else {
-    return null;
-  }
-}
-
-const createUser = function(email, password, users) {
-  const userID = generateRandomString();
-  users[userID] = {
-    id: userID,
-    email,
-    password
-  };
-  return userID
-}
-
-function generateRandomString() {
-  let result = '';
-  let characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let charactersLength = characters.length;
-  for (let i = 0; i < 6; i ++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
 app.get("/", (req, res) => {
   res.redirect("/login");
 });
@@ -238,7 +205,7 @@ app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
   const templateVars = { 
     user: getUserById(userDB, userID),
-    urls: urlsForUser(userID)
+    urls: urlsForUser(userID, urlDatabase)
   };
   res.render("urls_index", templateVars)
 })
